@@ -1,0 +1,10 @@
+{% extends "profit_calculator/base.html" %}
+
+{% block content %}
+    <form method="post">
+        {% csrf_token %}
+        {% block form %}{% endblock %}
+        <input class="btn btn-dark my-2" type="submit" />
+        <a class="btn btn-dark my-2" href="{% url 'profit_calculator:index' %}">Cancel</a>
+    </form>
+{% endblock %}

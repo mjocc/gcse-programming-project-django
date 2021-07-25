@@ -1,0 +1,78 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="shortcut icon" href="{% static 'profit_calculator/img/favicon.ico' %}" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <section class="content">
+        <header>
+            <nav class="navbar navbar-dark bg-dark px-2">
+                <a class="navbar-brand" href="{% url 'profit_calculator:index' %}">
+                    <img src="{% static 'profit_calculator/img/plane.svg' %}" width="30" height="30" class="d-inline-block align-top mx-1" alt="Plane logo">
+                    Flight Plan Profitability Calculator
+                </a>
+                <div class="dropdown mt-0 ms-auto ms-sm-0">
+                    <span class="navbar-text px-3 dropdown-toggle" role="button" id="dropdown-menu-link" data-bs-toggle="dropdown" aria-expanded="false">
+                        {% block header %}{% endblock %}
+                    </span>
+                    <div id="navbar-dropdown-menu" class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="dropdown-menu-link">
+                        {% url "profit_calculator:index" as index %}
+                        <a class="dropdown-item {% if request.path == index %}active{% endif %}" href="{{ index }}">Home</a>
+                        <div class="dropdown-divider"></div>
+                        {% url "profit_calculator:airport_details" as airport_details %}
+                        <a class="dropdown-item {% if request.path == airport_details %}active{% endif %}" href="{{ airport_details }}">Airport details</a>
+                        {% url "profit_calculator:aircraft_details" as aircraft_details %}
+                        <a class="dropdown-item {% if request.path == aircraft_details %}active{% endif %}" href="{{ aircraft_details }}">Aircraft details</a>
+                        {% url "profit_calculator:pricing_details" as pricing_details %}
+                        <a class="dropdown-item {% if request.path == pricing_details %}active{% endif %}" href="{{ pricing_details }}">Pricing details</a>
+                        <div class="dropdown-divider"></div>
+                        {% if complete %}
+                        <div id="profit-dropdown-button">
+                            {% url "profit_calculator:profit_information" as profit_information %}
+                            <a class="dropdown-item {% if request.path == profit_information %}active{% endif %}" href="{{ profit_information }}">Profit information</a>
+                            <div class="dropdown-divider"></div>
+                        </div>
+                        {% endif %}
+                        <!--<a class="dropdown-item" href="">Import/export data</a>-->
+                        {% url "profit_calculator:clear_data" as clear_data %}
+                        <a class="dropdown-item {% if request.path == clear_data %}active{% endif %}" href="{{ clear_data }}">Clear data</a>
+                    </div>
+                </div>
+            </nav>
+        </header>
+        <main class="container p-3">
+            {% for message in messages %}
+                {% if message.extra_tags == "top" %}
+                    <div class="alert {{ message.level_tag }}" role="alert">{{ message }}</div>
+                {% endif %}
+            {% endfor %}
+
+            {% block content %}{% endblock %}
+
+            {% for message in messages %}
+                {% if message.extra_tags != "top" %}
+                    <div class="mt-2 alert {{ message.level_tag }}" role="alert">{{ message }}</div>
+                {% endif %}
+            {% endfor %}
+        </main>
+    </section>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            pageDataTable = document.querySelector('#page-data-table');
+            if (!!pageDataTable) {
+                pageDataTable.addEventListener('show.bs.collapse', () => {
+                    document.querySelector('#page-data-text').remove();
+                });
+            }
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

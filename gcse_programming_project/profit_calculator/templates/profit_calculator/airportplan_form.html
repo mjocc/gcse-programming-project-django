@@ -1,0 +1,24 @@
+{% extends "profit_calculator/base_form.html" %}
+
+{% block title %}Airport details{% endblock %}
+{% block header %}Enter airport details{% endblock %}
+
+{% block form %}
+    <div class="form-group my-3">
+        <label class="mb-1" for="uk-airport">UK Airport</label>
+        <select class="form-select" id="uk-airport" name="uk_airport" required>
+            <option disabled selected hidden>Select an option</option>
+            <option value="LPL">Liverpool John Lennon (LPL)</option>
+            <option value="BOH">Bournemouth International Airport (BOH)</option>
+        </select>
+    </div>
+    <div class="form-group my-3">
+        <label class="mb-1" for="f-airport">Foreign Airport</label>
+        <select class="form-select" id="f-airport" name="foreign_airport" required>
+            <option disabled selected hidden>Select an option</option>
+            {% for airport in airports %}
+                <option value="{{ airport.code }}">{{ airport }} ({{ airport.code }})</option>
+            {% endfor %}
+        </select>
+    </div>
+{% endblock %}

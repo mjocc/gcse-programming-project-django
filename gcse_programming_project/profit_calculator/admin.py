@@ -1,8 +1,13 @@
 from django.contrib import admin
 
-from .models import Aircraft, Airport
+from .models import (Aircraft, AircraftPlan, Airport, AirportPlan, FlightPlan,
+                     PricingPlan)
+
+admin.site.site_header = "Flight profitability calculator administration"
+admin.site.site_title = "Flight plan administration"
 
 
+@admin.register(Airport)
 class AirportAdmin(admin.ModelAdmin):
     fieldsets = [
         ("Name", {"fields": ["code", "name"]}),
@@ -13,6 +18,7 @@ class AirportAdmin(admin.ModelAdmin):
     search_fields = ["code", "name"]
 
 
+@admin.register(Aircraft)
 class AircraftAdmin(admin.ModelAdmin):
     fieldsets = [
         ("Type", {"fields": ["type"]}),
@@ -26,7 +32,7 @@ class AircraftAdmin(admin.ModelAdmin):
     search_fields = ["type"]
 
 
-admin.site.register(Airport, AirportAdmin)
-admin.site.register(Aircraft, AircraftAdmin)
-admin.site.site_header = "Flight profitability calculator administration"
-admin.site.site_title = "Flight plan administration"
+admin.site.register(AirportPlan)
+admin.site.register(AircraftPlan)
+admin.site.register(PricingPlan)
+admin.site.register(FlightPlan)

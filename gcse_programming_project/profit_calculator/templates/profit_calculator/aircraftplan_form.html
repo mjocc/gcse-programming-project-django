@@ -1,0 +1,39 @@
+{% extends "profit_calculator/base_form.html" %}
+
+{% block title %}Aircraft details{% endblock %}
+{% block header %}Enter aircraft details{% endblock %}
+
+{% block form %}
+    <div class="form-group my-3">
+        <label class="mb-1" for="aircraft-type">Aircraft Type</label>
+        <select class="form-select" id="aircraft-type" name="aircraft" required>
+            <option disabled selected hidden>Select an option</option>
+            {% for aircraft in aircrafts %}
+                <option value="{{ aircraft.pk }}">{{ aircraft }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group my-3">
+        <label class="mb-1" for="first-class-seats">First Class Seats</label>
+        <input type="number" class="form-control" id="first-class-seats" name="num_first_class" disabled required>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ aircraft_values|json_script:"aircraft-data" }}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+        const aircraftData = JSON.parse(document.getElementById('aircraft-data').textContent);
+        const aircraftType = document.querySelector('#aircraft-type');
+        const firstClassSeats = document.querySelector('#first-class-seats');
+        aircraftType.addEventListener("change", () => {
+            firstClassSeats.removeAttribute("disabled");
+            let aircraftTypeIndex = aircraftType.value;
+            let [maxStandardClass, minFirstClass] = aircraftData[aircraftTypeIndex];
+            let maxFirstClass = maxStandardClass / 2;
+            firstClassSeats.setAttribute("min", minFirstClass);
+            firstClassSeats.setAttribute("max", maxFirstClass);
+        });
+    });
+    </script>
+{% endblock %}
