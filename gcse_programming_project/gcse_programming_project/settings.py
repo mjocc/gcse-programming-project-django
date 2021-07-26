@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "profit_calculator.apps.ProfitCalculatorConfig",
+    "crispy_forms",
+    "crispy_bootstrap5",
 ]
 
 MIDDLEWARE = [
@@ -146,3 +148,8 @@ MESSAGE_TAGS = {
     messages.WARNING: "alert-warning",
     messages.ERROR: "alert-danger",
 }
+
+# Crispy forms
+# https://django-crispy-forms.readthedocs.io/en/latest/
+
+CRISPY_TEMPLATE_PACK = "bootstrap5"

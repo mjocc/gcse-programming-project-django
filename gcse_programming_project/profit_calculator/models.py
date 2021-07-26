@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
@@ -64,6 +65,18 @@ class AircraftPlan(models.Model):
 
     def details_exist(self):
         return self.aircraft is not None and self.num_first_class is not None
+
+    def clean(self):
+        # TODO make sure this works
+        if self.num_first_class / 2 > self.aircraft.max_standard_class:
+            raise ValidationError(
+                {
+                    "num_first_class": "The number of first class seats is too large - "
+                    "there must be less than "
+                    "%(self.aircraft.max_standard_class / 2)"
+                }
+            )
+        return super().clean()
 
     def in_range(self):
         if self.details_exist() and self.flightplan.airport_plan.details_exist():

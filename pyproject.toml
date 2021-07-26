@@ -7,6 +7,8 @@ authors = ["matthew-occleshaw <61629073+matthew-occleshaw@users.noreply.github.c
 [tool.poetry.dependencies]
 python = "^3.8"
 Django = "^3.2.5"
+django-crispy-forms = "^1.12.0"
+crispy-bootstrap5 = "^0.4"
 
 [tool.poetry.dev-dependencies]
 

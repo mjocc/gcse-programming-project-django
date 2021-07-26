@@ -3,28 +3,37 @@
 {% block title %}Sign Up{% endblock %}
 
 {% load static %}
+{% load crispy_forms_tags %}
+
+{% block head %}
+    <style>
+        html,
+        body {
+          height: 100%;
+        }
+
+        body {
+          background-color: #f5f5f5;
+         }
+
+        .form-signin {
+          width: 100%;
+          max-width: 330px;
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
-    <form method="post">
-        {% csrf_token %}
-        {{ form }}
-<!--        <label for="id_username">Username:</label>-->
-<!--        <input type="text" name="username" maxlength="150" autocapitalize="none" autocomplete="username" autofocus required id="id_username">-->
-<!--        <br><span class="helptext">Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.</span>-->
-<!--        <label for="id_password1">Password:</label>-->
-<!--        <input type="password" name="password1" autocomplete="new-password" required id="id_password1">-->
-<!--        <br>-->
-<!--        <span class="helptext">-->
-<!--            <ul>-->
-<!--                <li>Your password can’t be too similar to your other personal information.</li>-->
-<!--                <li>Your password must contain at least 8 characters.</li>-->
-<!--                <li>Your password can’t be a commonly used password.</li>-->
-<!--                <li>Your password can’t be entirely numeric.</li>-->
-<!--            </ul>-->
-<!--        </span>-->
-<!--        <label for="id_password2">Password confirmation:</label>-->
-<!--        <input type="password" name="password2" autocomplete="new-password" required id="id_password2">-->
-<!--        <br><span class="helptext">Enter the same password as before, for verification.</span>-->
-        <button class="mt-2 w-100 btn btn-lg btn-primary" type="submit">Sign Up</button>
-    </form>
+<main class="mt-5">
+    <section class="form-signin p-3 m-auto">
+        <img class="mb-2 d-block mx-auto" src="{% static 'profit_calculator/img/dark_plane.svg'%}" alt="" width="72" height="57">
+        <h1 class="h3 mb-3 fw-normal text-center">Sign Up</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <button class="w-100 btn btn-lg btn-primary" type="submit">Sign Up</button>
+            <p class="text-muted fw-light text-center mt-2">Already have an account? <a href="{% url 'profit_calculator:login' %}">Log in here.</a></p>
+        </form>
+    </section>
+</main>
 {% endblock %}
