@@ -1,4 +1,4 @@
-{% extends "profit_calculator/base_form.html" %}
+{% extends "profit_calculator/forms/base_form.html" %}
 
 {% block title %}Pricing details{% endblock %}
 {% block header %}Enter pricing details{% endblock %}
@@ -10,8 +10,8 @@
             <div class="input-group-prepend">
                 <div class="input-group-text">£</div>
             </div>
-            <input type="number" step="0.01" min="0" class="form-control" id="standard_class_price"
-                   name="standard-class-price" required {% if disable %}disabled{% endif %}/>
+            <input type="number" step="0.01" min="0" class="form-control" id="standard-class-price"
+                   name="standard_class_price" required {% if disable %}disabled{% endif %}/>
         </div>
     </div>
     <div class="form-group my-3">

@@ -1,0 +1,61 @@
+{% load static %}
+
+{% url "profit_calculator:index" as index %}
+{% url "profit_calculator:airport_details" as airport_details %}
+{% url "profit_calculator:aircraft_details" as aircraft_details %}
+{% url "profit_calculator:pricing_details" as pricing_details %}
+{% url "profit_calculator:profit_information" as profit_information %}
+{% url "profit_calculator:clear_data" as clear_data %}
+
+<header>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark px-2">
+        <a class="navbar-brand" href="{% url 'profit_calculator:index' %}">
+            <img src="{% static 'profit_calculator/img/plane.svg' %}" width="30" height="30" class="d-inline-block align-top mx-1" alt="Plane logo">
+            Flight Plan Profitability Calculator
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-collapsed-section" aria-controls="navbar-collapsed-section" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbar-collapsed-section">
+            <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == index %}active{% endif %}" href="{{ index }}">Home</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {% if request.path == airport_details or request.path == aircraft_details or request.path == pricing_details %}active{% endif %}" href="#" id="navbar-forms-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Data entry forms
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbar-forms-dropdown">
+                        <li><a class="dropdown-item {% if request.path == airport_details %}active{% endif %}" href="{{ airport_details }}">Airport details</a></li>
+                        <li><a class="dropdown-item {% if request.path == aircraft_details %}active{% endif %}" href="{{ aircraft_details }}">Aircraft details</a></li>
+                        <li><a class="dropdown-item {% if request.path == pricing_details %}active{% endif %}" href="{{ pricing_details }}">Pricing details</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if not complete %}disabled{% elif request.path == profit_information %}active{% endif %}" href="{{ profit_information }}">Profit information</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Import/export data</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == clear_data %}active{% endif %}" href="{{ clear_data }}">Clear data</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav ms-auto mb-2 mb-md-0">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbar-account-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        {% if user.is_authenticated %}{{ user.username }}{% else %}Account{% endif %}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="navbar-account-dropdown">
+                        {% if user.is_authenticated %}
+                            <li><a class="dropdown-item" href="{% url 'profit_calculator:logout' %}">Log out</a></li>
+                        {% else %}
+                            <li><a class="dropdown-item" href="{% url 'profit_calculator:login' %}">Log in</a></li>
+                            <li><a class="dropdown-item" href="{% url 'profit_calculator:signup' %}">Sign up</a></li>
+                        {% endif %}
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+</header>

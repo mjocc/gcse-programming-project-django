@@ -1,4 +1,4 @@
-{% extends "profit_calculator/base_form.html" %}
+{% extends "profit_calculator/forms/base_form.html" %}
 
 {% block title %}Aircraft details{% endblock %}
 {% block header %}Enter aircraft details{% endblock %}
@@ -20,6 +20,7 @@
 {% endblock %}
 
 {% block scripts %}
+    {{ block.super }}
     {{ aircraft_values|json_script:"aircraft-data" }}
     <script>
         document.addEventListener('DOMContentLoaded', () => {

@@ -84,6 +84,12 @@ DATABASES = {
     }
 }
 
+# Authentication
+# https://docs.djangoproject.com/en/3.2/topics/auth/default/
+
+LOGIN_URL = "profit_calculator:login"
+LOGIN_REDIRECT_URL = "profit_calculator:index"
+LOGOUT_REDIRECT_URL = "profit_calculator:login"
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators

@@ -1,4 +1,4 @@
-{% extends "profit_calculator/base.html" %}
+{% extends "profit_calculator/base/standard_base.html" %}
 
 {% block title %}{% block header %}Home{% endblock %}{% endblock %}
 
@@ -8,11 +8,9 @@
         <a href="{% url 'profit_calculator:aircraft_details' %}" class="btn btn-dark m-2">Enter aircraft details</a>
         <a href="{% url 'profit_calculator:pricing_details' %}" class="btn btn-dark m-2">Enter pricing details</a>
         <hr class="m-2">
-        {% if complete %}
-            <a href="{% url 'profit_calculator:profit_information' %}" class="btn btn-dark m-2">Profit information</a>
-            <hr class="m-2">
-        {% endif %}
-        <!--<a href="" class="btn btn-dark m-2">Import/export data</a>-->
+        <a href="{% url 'profit_calculator:profit_information' %}" class="btn btn-dark m-2 {% if not complete %}disabled{% endif %}">Profit information</a>
+        <hr class="m-2">
+        <a href="#" class="btn btn-dark m-2">Import/export data</a>
         <a href="{% url 'profit_calculator:clear_data' %}" class="btn btn-dark m-2">Clear data</a>
     <div>
 {% endblock %}

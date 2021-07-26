@@ -131,7 +131,7 @@ class FlightPlan(models.Model):
     def complete(self):
         return (
             self.airport_plan.details_exist()
-            and self.airport_plan.details_exist()
+            and self.aircraft_plan.details_exist()
             and self.aircraft_plan.in_range()
             and self.pricing_plan.details_exist()
         )
