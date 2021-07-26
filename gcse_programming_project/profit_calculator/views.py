@@ -6,27 +6,31 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views import View
-from django.views.generic import DetailView
+from django.views.generic import DetailView, ListView, TemplateView
+from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.edit import CreateView
 
-from .models import (Aircraft, AircraftPlan, Airport, AirportPlan, FlightPlan,
-                     PricingPlan)
+from .models import (
+    Aircraft,
+    AircraftPlan,
+    Airport,
+    AirportPlan,
+    FlightPlan,
+    PricingPlan,
+)
 
 
 def context_processor(request):
     try:
-        # FIXME must use currently selected FlightPlan object
-        #  (foreign key on User model)
-        fp = FlightPlan.objects.get()
+        fp = FlightPlan.objects.get(pk=request.session["current_fp"])
         complete = fp.complete()
-    except FlightPlan.DoesNotExist:
+    except (FlightPlan.DoesNotExist, KeyError):
         complete = False
     return {"complete": complete}
 
 
-class IndexView(View):
-    def get(self, request):
-        return render(request, "profit_calculator/misc/index.html")
+class IndexView(TemplateView):
+    template_name = "profit_calculator/misc/index.html"
 
 
 class UserLoginView(LoginView):
@@ -51,6 +55,13 @@ class UserSignupView(CreateView):
     form_class = UserCreationForm
     template_name = "profit_calculator/auth/signup.html"
     success_url = reverse_lazy("profit_calculator:login")
+
+
+class FlightPlanView(ListView):
+    template_name = "profit_calculator/misc/flightplan_list.html"
+
+    def get_queryset(self):
+        return FlightPlan.objects.filter(user=self.request.user)
 
 
 class AirportView(SuccessMessageMixin, CreateView):
@@ -118,9 +129,11 @@ class PricingView(SuccessMessageMixin, CreateView):
 
 
 class ProfitView(DetailView):
-    model = FlightPlan
     fields = ["airport_plan", "aircraft_plan", "pricing_plan"]
     success_url = reverse_lazy("profit_calculator:profit_information")
+
+    def get_object(self, **kwargs):
+        return FlightPlan.objects.get(pk=self.request.session["current_fp"])
 
 
 class ClearView(View):

@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
 
@@ -126,7 +127,8 @@ class FlightPlan(models.Model):
         PricingPlan, default=PricingPlan, on_delete=models.SET_DEFAULT
     )
     save_name = models.CharField(max_length=100)
-    updated = models.DateTimeField("date created/last updated", default=timezone.now)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created = models.DateTimeField("date created", default=timezone.now)
 
     def complete(self):
         return (

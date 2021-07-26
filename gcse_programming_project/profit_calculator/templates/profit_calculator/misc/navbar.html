@@ -1,0 +1,33 @@
+{% extends 'profit_calculator/base/base_navbar.html' %}
+
+{% block nav %}
+    <ul class="navbar-nav me-auto mb-2 mb-md-0">
+        <li class="nav-item">
+            <a class="nav-link {% if request.path == index %}active{% endif %}" href="{{ index }}">Home</a>
+        </li>
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle {% if request.path == airport_details or request.path == aircraft_details or request.path == pricing_details %}active{% endif %}"
+               href="#" id="navbar-forms-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Data entry forms
+            </a>
+            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbar-forms-dropdown">
+                <li><a class="dropdown-item {% if request.path == airport_details %}active{% endif %}"
+                       href="{{ airport_details }}">Airport details</a></li>
+                <li><a class="dropdown-item {% if request.path == aircraft_details %}active{% endif %}"
+                       href="{{ aircraft_details }}">Aircraft details</a></li>
+                <li><a class="dropdown-item {% if request.path == pricing_details %}active{% endif %}"
+                       href="{{ pricing_details }}">Pricing details</a></li>
+            </ul>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if not complete %}disabled{% elif request.path == profit_information %}active{% endif %}"
+               href="{{ profit_information }}">Profit information</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#">Import/export data</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.path == clear_data %}active{% endif %}" href="{{ clear_data }}">Clear data</a>
+        </li>
+    </ul>
+{% endblock %}

@@ -1,5 +1,7 @@
 {% extends 'profit_calculator/base/base.html' %}
 
+{% block title %}Log In{% endblock %}
+
 {% load static %}
 
 {% block head %}
@@ -50,7 +52,7 @@
         <form class="mb-2" method="post">
             {% csrf_token %}
             <img class="mb-4 d-block mx-auto" src="{% static 'profit_calculator/img/dark_plane.svg'%}" alt="" width="72" height="57">
-            <h1 class="h3 mb-3 fw-normal text-center">Sign In</h1>
+            <h1 class="h3 mb-3 fw-normal text-center">Log In</h1>
 
             <div class="form-floating">
                 <input type="text" class="form-control" name="username" autofocus autocapitalize="none" autocomplete="username" maxlength="150" required id="id_username" placeholder="Username">
@@ -63,7 +65,7 @@
             {% for message in messages %}
                 <div class="mt-2 mb-1 alert {{ message.level_tag }}" role="alert">{{ message }}</div>
             {% endfor %}
-            <button class="mt-2 w-100 btn btn-lg btn-primary" type="submit">Sign in</button>
+            <button class="mt-2 w-100 btn btn-lg btn-primary" type="submit">Log in</button>
         </form>
         <p class="text-muted fw-light text-center">Don't have an account? <a href="{% url 'profit_calculator:signup' %}">Sign up here.</a></p>
     </main>

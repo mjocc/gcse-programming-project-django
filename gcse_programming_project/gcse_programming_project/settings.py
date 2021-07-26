@@ -50,6 +50,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "profit_calculator.middleware.LoginRequiredMiddleware",
 ]
 
 ROOT_URLCONF = "gcse_programming_project.urls"
@@ -90,6 +91,7 @@ DATABASES = {
 LOGIN_URL = "profit_calculator:login"
 LOGIN_REDIRECT_URL = "profit_calculator:index"
 LOGOUT_REDIRECT_URL = "profit_calculator:login"
+OPEN_URLS = ["profit_calculator:signup", "profit_calculator:logout"]
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
