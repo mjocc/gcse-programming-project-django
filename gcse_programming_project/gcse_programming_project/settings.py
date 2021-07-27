@@ -53,6 +53,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "profit_calculator.middleware.LoginRequiredMiddleware",
+    "profit_calculator.middleware.FlightplanCookieRequiredMiddleware",
 ]
 
 ROOT_URLCONF = "gcse_programming_project.urls"

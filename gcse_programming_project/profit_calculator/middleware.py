@@ -20,3 +20,24 @@ class LoginRequiredMiddleware:
             return redirect(self.login_url + "?next=" + request.path)
 
         return self.get_response(request)
+
+
+class FlightplanCookieRequiredMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+        self.login_url = reverse_lazy(settings.LOGIN_URL)
+        self.open_urls = [
+            self.login_url,
+            reverse_lazy("profit_calculator:flightplans"),
+        ] + [reverse_lazy(url) for url in getattr(settings, "OPEN_URLS", [])]
+
+    def __call__(self, request):
+        if (
+            request.user.is_authenticated
+            and request.path not in self.open_urls
+            and not request.path.startswith("/admin/")
+            and "current_fp" not in request.session
+        ):
+            return redirect("profit_calculator:flightplans")
+
+        return self.get_response(request)

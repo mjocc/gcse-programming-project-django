@@ -3,119 +3,171 @@
 {% block title %}Flight plans{% endblock %}
 {% block header %}Manage flight plans{% endblock %}
 
+{% load static %}
+{% load crispy_forms_tags %}
+
 {% block content %}
-<table class="table table-striped table-hover" id="flightplan-table">
-    <thead>
-        <tr>
-            <th class="w-75" scope="col">Save name</th>
-            <th class="w-25"scope="col">Created</th>
-        </tr>
-    </thead>
-    {% if content_list %}
-        <tbody>
-            {% for flightplan in content_list %}
+    <table class="table table-hover" id="flightplan-table">
+        <thead>
             <tr>
-                <td>{{ flightplan.name }}</td>
-                <td>{{ flightplan.created }}</td>
+                <th style="width: 65%" scope="col">Save name</th>
+                <th style="width: 30%" scope="col">Created</th>
+                <th style="width: 5%" scope="col">Complete</th>
             </tr>
-            {% endfor %}
-        </tbody>
-    {% else %}
-        <tr data-no-items="true">
-            <td colspan="2" class="text-muted fw-light text-center fst-italic">No flightplans exist</td>
-        </tr>
-    {% endif %}
-</table>
-<button class="btn btn-dark" id="create-button" data-bs-toggle="modal" data-bs-target="#create-modal">Create</button>
-<button class="btn btn-danger float-end ms-1" id="delete-button" data-bs-toggle="modal" data-bs-target="#delete-modal"> <!--disabled-->Delete</button>
-<button class="btn btn-dark float-end" id="edit-button" data-bs-toggle="modal" data-bs-target="#edit-modal"> <!--disabled-->Edit</button>
+        </thead>
+        {% if object_list %}
+            <tbody>
+                {% for flightplan in object_list %}
+                <tr data-id="{{ flightplan.pk }}">
+                    <td>{{ flightplan.save_name }}</td>
+                    <td>{{ flightplan.created }}</td>
+                    {% if flightplan.complete %}
+                        <td class="text-center p-1"><img src="{% static 'profit_calculator/img/tick.svg' %}" width="30" height="30" alt="Complete"></td>
+                    {% else %}
+                        <td class="text-center p-1"><img src="{% static 'profit_calculator/img/cross.svg' %}" width="30" height="30" alt="Not complete"></td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        {% else %}
+            <tr data-no-items="true">
+                <td colspan="3" class="text-muted fw-light text-center fst-italic">No flightplans exist</td>
+            </tr>
+        {% endif %}
+    </table>
 
-<div class="modal" tabindex="-1" id="create-modal">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Create flight plan</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <button class="btn btn-dark" id="create-button" data-bs-toggle="modal" data-bs-target="#create-modal">Create</button>
+    <button class="btn btn-danger float-end ms-1" id="delete-button" data-bs-toggle="modal" data-bs-target="#delete-modal" disabled>Delete</button>
+    <button class="btn btn-dark float-end ms-1" id="edit-button" data-bs-toggle="modal" data-bs-target="#edit-modal" disabled>Edit</button>
+    <button class="btn btn-dark float-end" id="select-button" disabled>Select</button>
+
+    <div class="alert alert-danger mt-3 invisible" id="error-message" role="alert">Something went wrong. Please try again.</div>
+
+    <div class="modal" tabindex="-1" id="create-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create flight plan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        {{ create_form|crispy }}
+                    </div>
+                    <div class="modal-footer">
+                        <input type="submit" class="btn btn-dark" value="Create">
+                        <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
             </div>
-            <form method="post">
-                {% csrf_token %}
+        </div>
+    </div>
+
+    <div class="modal" tabindex="-1" id="edit-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit flight plan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        {{ edit_form|crispy }}
+                    </div>
+                    <div class="modal-footer">
+                        <input type="submit" class="btn btn-dark" value="Update">
+                        <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" tabindex="-1" id="delete-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete flight plan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
                 <div class="modal-body">
-                    {{ create_form }}
+                    This will irreversibly delete the selected flight plan. Are you sure?
                 </div>
                 <div class="modal-footer">
-                    <input type="submit" class="btn btn-dark" value="Create">
-                    <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-danger" value="Continue" id="confirm-delete">Continue</button>
+                    <button class="btn btn-dark" data-bs-dismiss="modal">Cancel</button>
                 </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<div class="modal" tabindex="-1" id="edit-modal">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Edit flight plan</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form method="post">
-                {% csrf_token %}
-                <div class="modal-body">
-                    {{ edit_form }}
-                </div>
-                <div class="modal-footer">
-                    <input type="submit" class="btn btn-dark" value="Update">
-                    <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cancel</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<div class="modal" tabindex="-1" id="delete-modal">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Delete flight plan</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                This will irreversibly delete the selected flight plan. Are you sure?
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-danger" value="Continue" id="confirm-delete">Continue</button>
-                <button class="btn btn-dark" data-bs-dismiss="modal">Cancel</button>
             </div>
         </div>
     </div>
-</div>
 {% endblock %}
 
 {% block scripts %}
-<script>
-    document.addEventListener('DOMContentLoaded', (e) => {
-        let table = document.querySelector('#flightplan-table');
-        let tableRows = document.querySelectorAll('#flightplan-table tbody tr');
-        let createButton = document.querySelector('#create-button');
-        let editButton = document.querySelector('#edit-button');
-        let deleteButton = document.querySelector('#delete-button');
-        let confirmDelete = document.querySelector('#confirm-delete');
-        let modal = document.querySelector('#modal');
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/2.2.1/js.cookie.min.js" integrity="sha512-Meww2sXqNHxI1+5Dyh/9KAtvI9RZSA4c1K2k5iL02oiPO/RH3Q30L3M1albtqMg50u4gRTYdV4EXOQqXEI336A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', (e) => {
+            let table = document.querySelector('#flightplan-table');
+            let tableRows = document.querySelectorAll('#flightplan-table tbody tr');
 
-        confirmDelete.addEventListener('click', (e) => {
-            console.log('deleted');
-            // fetch('');
-        });
-        // FIXME
-        Array.from(tableRows).foreach((elem) => {
-            if ((elem.dataset.noItems == "true")){
-                elem.addEventListener('click', (e) => {
-                    console.log("click detected");
-                    elem.addClass('selected');
-                    elem.parentNode.childNodes.foreach((elem) => elem.removeClass('selected'));
-                });
+            let createButton = document.querySelector('#create-button');
+
+            let selectButton = document.querySelector('#select-button');
+            let editButton = document.querySelector('#edit-button');
+            let deleteButton = document.querySelector('#delete-button');
+            let confirmDelete = document.querySelector('#confirm-delete');
+            let rowButtons = [selectButton, editButton, deleteButton];
+
+            let errorMessage = document.querySelector('#error-message');
+
+            let selected;
+
+            const csrftoken = Cookies.get('csrftoken');
+
+            async function setFlightPlanCookie() {
+                let data = new FormData();
+                data.append("selected-fp", selected);
+                await fetch('{% url 'profit_calculator:flightplans' %}', {
+                    method: 'POST',
+                    body: data,
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    }
+                })
+                    .then(jsonresponse => jsonresponse.json())
+                    .then(data => {
+                        if (data.success){
+                            window.location.href = "{% url 'profit_calculator:index' %}"
+                        } else {
+                            errorMessage.classList.remove('invisible')
+                        }
+                    });
             }
+
+            selectButton.addEventListener('click', (e) => {
+                setFlightPlanCookie();
+            });
+
+            confirmDelete.addEventListener('click', (e) => {
+                console.log('deleted');
+                // fetch('');
+            });
+
+            tableRows.forEach((elem) => {
+                if (!(elem.dataset.noItems == 'true')){
+                    elem.addEventListener('click', (e) => {
+                        elem.parentNode.childNodes.forEach((sibElem) => {
+                            if (sibElem.tagName == 'TR'){
+                                sibElem.classList.remove('table-active');
+                            }
+                        });
+                        elem.classList.add('table-active');
+                        selected = parseInt(elem.dataset.id);
+                        rowButtons.forEach((button) => button.disabled = false)
+                    });
+                }
+            });
         });
-    });
-</script>
+    </script>
 {% endblock %}

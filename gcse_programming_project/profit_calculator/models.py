@@ -40,18 +40,20 @@ class AirportPlan(models.Model):
         default="",
     )
     foreign_airport = models.ForeignKey(Airport, on_delete=models.PROTECT, null=True)
-    distance = models.FloatField("distance between airports", null=True)
+    distance = models.FloatField("distance between airports", null=True, blank=True)
 
     def details_exist(self):
         return self.uk_airport != "" and self.foreign_airport != ""
 
     def save(self, *args, **kwargs):
-        if self.uk_airport == "LPL":
-            self.distance = self.foreign_airport.distance_from_lpl
-        elif self.uk_airport == "BOH":
-            self.distance = self.foreign_airport.distance_from_boh
+        if self.details_exist():
+            if self.uk_airport == "LPL":
+                self.distance = self.foreign_airport.distance_from_lpl
+            elif self.uk_airport == "BOH":
+                self.distance = self.foreign_airport.distance_from_boh
         super().save(*args, **kwargs)
-        self.flightplan.pricing_plan.update()
+        # if not self._state.adding:
+        #     self.flightplan.pricing_plan.update()
 
 
 class AircraftPlan(models.Model):
@@ -60,23 +62,11 @@ class AircraftPlan(models.Model):
         "Number of first class seats", null=True
     )
     num_standard_class = models.PositiveSmallIntegerField(
-        "Number of standard class seats", null=True
+        "Number of standard class seats", null=True, blank=True
     )
 
     def details_exist(self):
         return self.aircraft is not None and self.num_first_class is not None
-
-    def clean(self):
-        # TODO make sure this works
-        if self.num_first_class / 2 > self.aircraft.max_standard_class:
-            raise ValidationError(
-                {
-                    "num_first_class": "The number of first class seats is too large - "
-                    "there must be less than "
-                    "%(self.aircraft.max_standard_class / 2)"
-                }
-            )
-        return super().clean()
 
     def in_range(self):
         if self.details_exist() and self.flightplan.airport_plan.details_exist():
@@ -84,12 +74,25 @@ class AircraftPlan(models.Model):
         else:
             return None
 
+    def clean(self):
+        if self.num_first_class / 2 > self.aircraft.max_standard_class:
+            raise ValidationError(
+                {
+                    "num_first_class": "The number of first class seats is too large - "
+                    f"there must be less than {self.aircraft.max_standard_class / 2}"
+                },
+                code="invalid",
+            )
+        return super().clean()
+
     def save(self, *args, **kwargs):
-        self.num_standard_class = (
-            self.aircraft.max_standard_class - self.num_first_class * 2
-        )
+        if self.details_exist():
+            self.num_standard_class = (
+                self.aircraft.max_standard_class - self.num_first_class * 2
+            )
         super().save(*args, **kwargs)
-        self.flightplan.pricing_plan.update()
+        # if not self._state.adding:
+        #     self.flightplan.pricing_plan.update()
 
 
 class PricingPlan(models.Model):
@@ -97,10 +100,10 @@ class PricingPlan(models.Model):
         max_digits=7, decimal_places=2, null=True
     )
     first_class_price = models.DecimalField(max_digits=7, decimal_places=2, null=True)
-    cost_per_seat = models.FloatField("Running cost per seat", null=True)
-    running_cost = models.FloatField("Total running cost", null=True)
-    income = models.FloatField(null=True)
-    profit = models.FloatField(null=True)
+    cost_per_seat = models.FloatField("Running cost per seat", null=True, blank=True)
+    running_cost = models.FloatField("Total running cost", null=True, blank=True)
+    income = models.FloatField(null=True, blank=True)
+    profit = models.FloatField(null=True, blank=True)
 
     def details_exist(self):
         return (
@@ -126,18 +129,49 @@ class PricingPlan(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        self.update()
+        # if not self._state.adding:
+        #     self.update()
+
+
+def default_airportplan():
+    ap = AirportPlan()
+    ap.save()
+    return ap.pk
+
+
+def default_aircraftplan():
+    ap = AircraftPlan()
+    ap.save()
+    return ap.pk
+
+
+def default_pricingplan():
+    pp = PricingPlan()
+    pp.save()
+    return pp.pk
 
 
 class FlightPlan(models.Model):
     airport_plan = models.OneToOneField(
-        AirportPlan, default=AirportPlan, on_delete=models.SET_DEFAULT
+        AirportPlan,
+        default=default_airportplan,
+        on_delete=models.SET_DEFAULT,
+        blank=True,
+        auto_created=True,
     )
     aircraft_plan = models.OneToOneField(
-        AircraftPlan, default=AircraftPlan, on_delete=models.SET_DEFAULT
+        AircraftPlan,
+        default=default_aircraftplan,
+        on_delete=models.SET_DEFAULT,
+        blank=True,
+        auto_created=True,
     )
     pricing_plan = models.OneToOneField(
-        PricingPlan, default=PricingPlan, on_delete=models.SET_DEFAULT
+        PricingPlan,
+        default=default_pricingplan,
+        on_delete=models.SET_DEFAULT,
+        blank=True,
+        auto_created=True,
     )
     save_name = models.CharField(max_length=100)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
