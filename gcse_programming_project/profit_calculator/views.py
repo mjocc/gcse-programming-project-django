@@ -167,7 +167,8 @@ class PricingView(SuccessMessageMixin, UpdateView):
                 f"{reverse_lazy('profit_calculator:airport_details')}'>here</a>.",
                 "top",
             )
-            context["disable"] = True
+            disable = True
+        context["disable"] = disable
         return context
 
     def form_invalid(self, form):
