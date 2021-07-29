@@ -5,7 +5,7 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.detail import SingleObjectMixin
@@ -223,7 +223,7 @@ class PricingView(SuccessMessageMixin, UpdateView):
                 self.request,
                 f"No airport data has been submitted. This is needed to calculate the "
                 f"profit. Press <a href='"
-                f"{reverse_lazy('profit_calculator:airport_details')}'>here</a> to "
+                f"{reverse('profit_calculator:airport_details')}'>here</a> to "
                 f"enter it.",
                 "top",
             )
@@ -233,7 +233,7 @@ class PricingView(SuccessMessageMixin, UpdateView):
                 self.request,
                 f"No aircraft data has been submitted. This is needed to calculate the "
                 f"profit. Press <a href='"
-                f"{reverse_lazy('profit_calculator:aircraft_details')}'>here</a> to "
+                f"{reverse('profit_calculator:aircraft_details')}'>here</a> to "
                 f"enter it.",
                 "top",
             )
@@ -243,9 +243,9 @@ class PricingView(SuccessMessageMixin, UpdateView):
                 self.request,
                 f"This route is longer than the range of the aircraft selected. Please "
                 f"change the aircraft <a href='"
-                f"{reverse_lazy('profit_calculator:aircraft_details')}'>here</a> or "
+                f"{reverse('profit_calculator:aircraft_details')}'>here</a> or "
                 f"change the route <a href='"
-                f"{reverse_lazy('profit_calculator:airport_details')}'>here</a>.",
+                f"{reverse('profit_calculator:airport_details')}'>here</a>.",
                 "top",
             )
             disable = True
