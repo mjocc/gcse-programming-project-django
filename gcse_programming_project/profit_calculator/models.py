@@ -177,6 +177,9 @@ class FlightPlan(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     created = models.DateTimeField("date created", default=timezone.now)
 
+    def __str__(self):
+        return self.save_name
+
     def complete(self):
         return (
             self.airport_plan.details_exist()

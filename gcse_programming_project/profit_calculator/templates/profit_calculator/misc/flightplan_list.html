@@ -15,8 +15,8 @@
                 <th style="width: 5%" scope="col">Complete</th>
             </tr>
         </thead>
+        <tbody>
         {% if object_list %}
-            <tbody>
                 {% for flightplan in object_list %}
                 <tr data-id="{{ flightplan.pk }}">
                     <td>{{ flightplan.save_name }}</td>
@@ -28,12 +28,12 @@
                     {% endif %}
                 </tr>
                 {% endfor %}
-            </tbody>
         {% else %}
             <tr data-no-items="true">
                 <td colspan="3" class="text-muted fw-light text-center fst-italic">No flightplans exist</td>
             </tr>
         {% endif %}
+        </tbody>
     </table>
 
     <button class="btn btn-dark" id="create-button" data-bs-toggle="modal" data-bs-target="#create-modal">Create</button>
@@ -41,7 +41,7 @@
     <button class="btn btn-dark float-end ms-1" id="edit-button" data-bs-toggle="modal" data-bs-target="#edit-modal" disabled>Edit</button>
     <button class="btn btn-dark float-end" id="select-button" disabled>Select</button>
 
-    <div class="alert alert-danger mt-3 invisible" id="error-message" role="alert">Something went wrong. Please try again.</div>
+    <div class="alert mt-3 invisible" id="error-message" role="alert"></div>
 
     <div class="modal" tabindex="-1" id="create-modal">
         <div class="modal-dialog">
@@ -50,7 +50,7 @@
                     <h5 class="modal-title">Create flight plan</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form method="post">
+                <form method="post" action="{% url 'profit_calculator:create_flightplan' %}">
                     {% csrf_token %}
                     <div class="modal-body">
                         {{ create_form|crispy }}
@@ -71,8 +71,9 @@
                     <h5 class="modal-title">Edit flight plan</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form method="post">
+                <form method="post" action="{% url 'profit_calculator:update_flightplan' %}">
                     {% csrf_token %}
+                    <input type="hidden" name="selected-fp">
                     <div class="modal-body">
                         {{ edit_form|crispy }}
                     </div>
@@ -92,13 +93,17 @@
                     <h5 class="modal-title">Delete flight plan</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    This will irreversibly delete the selected flight plan. Are you sure?
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-danger" value="Continue" id="confirm-delete">Continue</button>
-                    <button class="btn btn-dark" data-bs-dismiss="modal">Cancel</button>
-                </div>
+                <form method="post" action="{% url 'profit_calculator:delete_flightplan' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="selected-fp">
+                    <div class="modal-body">
+                        This will irreversibly delete the selected flight plan. Are you sure?
+                    </div>
+                    <div class="modal-footer">
+                        <input type="submit" class="btn btn-danger" value="Continue" id="confirm-delete">
+                        <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -106,6 +111,7 @@
 
 {% block scripts %}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/2.2.1/js.cookie.min.js" integrity="sha512-Meww2sXqNHxI1+5Dyh/9KAtvI9RZSA4c1K2k5iL02oiPO/RH3Q30L3M1albtqMg50u4gRTYdV4EXOQqXEI336A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    {{ flightplan_names|json_script:"flightplan-names" }}
     <script>
         document.addEventListener('DOMContentLoaded', (e) => {
             let table = document.querySelector('#flightplan-table');
@@ -116,14 +122,24 @@
             let selectButton = document.querySelector('#select-button');
             let editButton = document.querySelector('#edit-button');
             let deleteButton = document.querySelector('#delete-button');
-            let confirmDelete = document.querySelector('#confirm-delete');
             let rowButtons = [selectButton, editButton, deleteButton];
 
             let errorMessage = document.querySelector('#error-message');
 
+            let selectedFpFields = document.querySelectorAll('input[name="selected-fp"]');
+            let editNameField = document.querySelector('#id_form-1-save_name');
+
+            const flightplanNames = JSON.parse(document.querySelector('#flightplan-names').textContent);
+
             let selected;
 
+
             const csrftoken = Cookies.get('csrftoken');
+
+            function showMessage (msgText, msgType) {
+                errorMessage.textContent = msgText;
+                errorMessage.classList = `alert alert-${msgType} mt-3`;
+            }
 
             async function setFlightPlanCookie() {
                 let data = new FormData();
@@ -135,23 +151,18 @@
                         'X-CSRFToken': csrftoken
                     }
                 })
-                    .then(jsonresponse => jsonresponse.json())
+                    .then(rawresponse => rawresponse.json())
                     .then(data => {
                         if (data.success){
-                            window.location.href = "{% url 'profit_calculator:index' %}"
+                            window.location.href = "{% url 'profit_calculator:index' %}";
                         } else {
-                            errorMessage.classList.remove('invisible')
+                            showMessage('Something went wrong. Please try again.', 'danger');
                         }
                     });
             }
 
             selectButton.addEventListener('click', (e) => {
                 setFlightPlanCookie();
-            });
-
-            confirmDelete.addEventListener('click', (e) => {
-                console.log('deleted');
-                // fetch('');
             });
 
             tableRows.forEach((elem) => {
@@ -164,7 +175,9 @@
                         });
                         elem.classList.add('table-active');
                         selected = parseInt(elem.dataset.id);
-                        rowButtons.forEach((button) => button.disabled = false)
+                        editNameField.value = flightplanNames[selected];
+                        selectedFpFields.forEach((field) => field.value = selected);
+                        rowButtons.forEach((button) => button.disabled = false);
                     });
                 }
             });

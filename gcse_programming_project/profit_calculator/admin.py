@@ -32,7 +32,9 @@ class AircraftAdmin(admin.ModelAdmin):
     search_fields = ["type"]
 
 
-admin.site.register(AirportPlan)
-admin.site.register(AircraftPlan)
-admin.site.register(PricingPlan)
-admin.site.register(FlightPlan)
+@admin.register(FlightPlan)
+class FlightPlanAdmin(admin.ModelAdmin):
+    list_display = ("save_name", "created")
+    ordering = ("created", "save_name")
+    search_fields = ["save_name"]
+    fields = ["save_name", "user", "created"]

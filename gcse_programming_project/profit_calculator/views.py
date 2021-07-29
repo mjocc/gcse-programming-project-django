@@ -4,10 +4,14 @@ from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http import JsonResponse
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
+from django.views import View
 from django.views.generic import DetailView, ListView, TemplateView
+from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.edit import CreateView, UpdateView
 
+from .forms import FlightPlanFormSet
 from .models import (
     Aircraft,
     AircraftPlan,
@@ -55,22 +59,70 @@ class UserLogoutView(LogoutView):
         return super().get_next_page()
 
 
-class UserSignupView(CreateView):
+class UserSignupView(SuccessMessageMixin, CreateView):
     model = User
     form_class = UserCreationForm
     template_name = "profit_calculator/auth/signup.html"
     success_url = reverse_lazy("profit_calculator:login")
+    success_message = "Account created successfully."
 
 
 class FlightPlanView(ListView):
     template_name = "profit_calculator/misc/flightplan_list.html"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["flightplan_names"] = {
+            fp.pk: fp.save_name for fp in self.get_queryset()
+        }
+        fp_formset = FlightPlanFormSet()
+        context["create_form"] = fp_formset[0]
+        context["edit_form"] = fp_formset[1]
+        return context
+
     def get_queryset(self):
-        return FlightPlan.objects.filter(user=self.request.user)
+        return FlightPlan.objects.filter(user=self.request.user).order_by(
+            "-created", "save_name"
+        )
 
     def post(self, request):
+        """Set session cookie with current flightplan."""
         request.session["current_fp"] = int(request.POST["selected-fp"])
         return JsonResponse({"success": True})
+
+
+class CreateFlightPlan(CreateView):
+    model = FlightPlan
+    fields = ["save_name"]
+    http_method_names = ["post"]
+    success_url = reverse_lazy("profit_calculator:flightplans")
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user.id
+        super().form_valid(form)
+
+
+class UpdateFlightPlan(UpdateView):
+    model = FlightPlan
+    fields = ["save_name"]
+    http_method_names = ["post"]
+    success_url = reverse_lazy("profit_calculator:flightplans")
+
+    def get_object(self, **kwargs):
+        return FlightPlan.objects.get(pk=self.request.POST["selected-fp"])
+
+
+class DeleteFlightPlan(SingleObjectMixin, View):
+    def post(self, request):
+        # FIXME
+        self.object = self.get_object()
+        self.object.delete()
+        del request.session["current_fp"]
+        messages.success(request, "Flight plan deleted successfully.")
+        return redirect("profit_calculator:flightplans")
+
+    def get_object(self, **kwargs):
+        return FlightPlan.objects.get(pk=self.request.POST["selected-fp"])
 
 
 class AirportView(SuccessMessageMixin, UpdateView):
