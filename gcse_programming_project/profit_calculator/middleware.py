@@ -36,6 +36,7 @@ class FlightplanCookieRequiredMiddleware:
             request.user.is_authenticated
             and request.path not in self.open_urls
             and not request.path.startswith("/admin/")
+            and not request.path.startswith("/flightplans/")
             and "current_fp" not in request.session
         ):
             return redirect("profit_calculator:flightplans")

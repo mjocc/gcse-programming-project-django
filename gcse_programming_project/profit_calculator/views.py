@@ -3,15 +3,15 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.messages.views import SuccessMessageMixin
-from django.http import JsonResponse
-from django.shortcuts import redirect
+from django.http import Http404, JsonResponse
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.detail import SingleObjectMixin
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import CreateView, FormMixin, UpdateView
 
-from .forms import FlightPlanFormSet
+from .forms import FlightPlanForm, FlightPlanFormSet
 from .models import (
     Aircraft,
     AircraftPlan,
@@ -91,38 +91,67 @@ class FlightPlanView(ListView):
         return JsonResponse({"success": True})
 
 
-class CreateFlightPlan(CreateView):
+class CreateFlightPlan(FormMixin, View):
     model = FlightPlan
-    fields = ["save_name"]
-    http_method_names = ["post"]
+    form_class = FlightPlanForm
     success_url = reverse_lazy("profit_calculator:flightplans")
 
+    def post(self, request):
+        self.object = self.get_object()
+        form = self.get_form()
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+
     def form_valid(self, form):
-        form.instance.user = self.request.user.id
+        fp = FlightPlan(
+            save_name=self.request.POST["form-0-save_name"], user=self.request.user
+        )
         super().form_valid(form)
 
 
-class UpdateFlightPlan(UpdateView):
+class UpdateFlightPlan(SingleObjectMixin, FormMixin, View):
     model = FlightPlan
-    fields = ["save_name"]
-    http_method_names = ["post"]
+    form_class = FlightPlanForm
     success_url = reverse_lazy("profit_calculator:flightplans")
 
+    def post(self, request):
+        self.object = self.get_object()
+        form = self.get_form()
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+
+    def form_valid(self, form):
+        self.object.save_name = self.request.POST["form-1-save_name"]
+        self.object.save()
+        return super().form_valid(form)
+
     def get_object(self, **kwargs):
-        return FlightPlan.objects.get(pk=self.request.POST["selected-fp"])
+        try:
+            return get_object_or_404(FlightPlan, pk=self.request.POST["selected-fp"])
+        except KeyError:
+            raise Http404("Selected flightplan does not exist.")
 
 
 class DeleteFlightPlan(SingleObjectMixin, View):
     def post(self, request):
-        # FIXME
         self.object = self.get_object()
         self.object.delete()
-        del request.session["current_fp"]
+        try:
+            del request.session["current_fp"]
+        except KeyError:
+            pass
         messages.success(request, "Flight plan deleted successfully.")
         return redirect("profit_calculator:flightplans")
 
     def get_object(self, **kwargs):
-        return FlightPlan.objects.get(pk=self.request.POST["selected-fp"])
+        try:
+            return get_object_or_404(FlightPlan, pk=self.request.POST["selected-fp"])
+        except KeyError:
+            raise Http404("Selected flightplan does not exist.")
 
 
 class AirportView(SuccessMessageMixin, UpdateView):

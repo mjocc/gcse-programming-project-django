@@ -1,7 +1,6 @@
 from django.contrib import admin
 
-from .models import (Aircraft, AircraftPlan, Airport, AirportPlan, FlightPlan,
-                     PricingPlan)
+from .models import Aircraft, Airport, FlightPlan
 
 admin.site.site_header = "Flight profitability calculator administration"
 admin.site.site_title = "Flight plan administration"
@@ -34,7 +33,8 @@ class AircraftAdmin(admin.ModelAdmin):
 
 @admin.register(FlightPlan)
 class FlightPlanAdmin(admin.ModelAdmin):
-    list_display = ("save_name", "created")
+    list_display = ("id", "save_name", "created")
+    list_display_links = ("save_name",)
     ordering = ("created", "save_name")
     search_fields = ["save_name"]
     fields = ["save_name", "user", "created"]
