@@ -1,23 +1,6 @@
-{% extends 'profit_calculator/base/base.html' %}
+{% extends 'profit_calculator/base/base_messages.html' %}
 
 {% block body %}
     {% include 'profit_calculator/misc/navbar.html' %}
-    <section class="content">
-        {% block navbar %}{% endblock %}
-        <main class="container p-3">
-            {% for message in messages %}
-                {% if "top" in message.extra_tags %}
-                    <div class="alert {{ message.level_tag }}" role="alert">{{ message|safe }}</div>
-                {% endif %}
-            {% endfor %}
-
-            {% block content %}{% endblock %}
-
-            {% for message in messages %}
-                {% if message.extra_tags != "top" %}
-                    <div class="mt-2 alert {{ message.level_tag }}" role="alert">{{ message|safe }}</div>
-                {% endif %}
-            {% endfor %}
-        </main>
-    </section>
+    {{ block.super }}
 {% endblock %}

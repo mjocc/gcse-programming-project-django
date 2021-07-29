@@ -9,17 +9,10 @@ from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.detail import SingleObjectMixin
-from django.views.generic.edit import CreateView, FormMixin, UpdateView
+from django.views.generic.edit import CreateView, UpdateView
 
-from .forms import FlightPlanForm, FlightPlanFormSet
-from .models import (
-    Aircraft,
-    AircraftPlan,
-    Airport,
-    AirportPlan,
-    FlightPlan,
-    PricingPlan,
-)
+from .models import (Aircraft, AircraftPlan, Airport, AirportPlan, FlightPlan,
+                     PricingPlan)
 
 
 def context_processor(request):
@@ -69,16 +62,7 @@ class UserSignupView(SuccessMessageMixin, CreateView):
 
 class FlightPlanView(ListView):
     template_name = "profit_calculator/misc/flightplan_list.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["flightplan_names"] = {
-            fp.pk: fp.save_name for fp in self.get_queryset()
-        }
-        fp_formset = FlightPlanFormSet()
-        context["create_form"] = fp_formset[0]
-        context["edit_form"] = fp_formset[1]
-        return context
+    paginate_by = 5
 
     def get_queryset(self):
         return FlightPlan.objects.filter(user=self.request.user).order_by(
@@ -91,43 +75,60 @@ class FlightPlanView(ListView):
         return JsonResponse({"success": True})
 
 
-class CreateFlightPlan(FormMixin, View):
-    model = FlightPlan
-    form_class = FlightPlanForm
+class CreateFlightPlan(View):
     success_url = reverse_lazy("profit_calculator:flightplans")
 
     def post(self, request):
-        self.object = self.get_object()
-        form = self.get_form()
-        if form.is_valid():
-            return self.form_valid(form)
+        if len(self.request.POST["save-name"]) > 100:
+            return self.form_invalid()
         else:
-            return self.form_invalid(form)
+            return self.form_valid()
 
-    def form_valid(self, form):
+    def form_valid(self):
         fp = FlightPlan(
-            save_name=self.request.POST["form-0-save_name"], user=self.request.user
+            save_name=self.request.POST["save-name"], user=self.request.user
         )
-        super().form_valid(form)
+        fp.save()
+        messages.success(
+            self.request, f'Flight plan "{fp.save_name}" created successfully.'
+        )
+        return redirect(self.success_url)
+
+    def form_invalid(self):
+        messages.error(
+            self.request,
+            "The entered save name is invalid. "
+            "Please try again with a different save name.",
+        )
+        return redirect("profit_calculator:flightplans")
 
 
-class UpdateFlightPlan(SingleObjectMixin, FormMixin, View):
-    model = FlightPlan
-    form_class = FlightPlanForm
+class UpdateFlightPlan(SingleObjectMixin, View):
     success_url = reverse_lazy("profit_calculator:flightplans")
 
     def post(self, request):
         self.object = self.get_object()
-        form = self.get_form()
-        if form.is_valid():
-            return self.form_valid(form)
+        if len(self.request.POST["save-name"]) > 100:
+            return self.form_invalid()
         else:
-            return self.form_invalid(form)
+            return self.form_valid()
 
-    def form_valid(self, form):
-        self.object.save_name = self.request.POST["form-1-save_name"]
+    def form_valid(self):
+        self.object.save_name = self.request.POST["save-name"]
         self.object.save()
-        return super().form_valid(form)
+        messages.success(
+            self.request,
+            f'Flight plan "{self.object.save_name}" updated successfully.',
+        )
+        return redirect("profit_calculator:flightplans")
+
+    def form_invalid(self):
+        messages.error(
+            self.request,
+            "The entered save name is invalid. "
+            "Please try again with a different save name.",
+        )
+        return redirect("profit_calculator:flightplans")
 
     def get_object(self, **kwargs):
         try:
@@ -262,6 +263,18 @@ class ProfitView(DetailView):
     fields = ["airport_plan", "aircraft_plan", "pricing_plan"]
     template_name = "profit_calculator/misc/flightplan_detail.html"
     success_url = reverse_lazy("profit_calculator:profit_information")
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if not self.object.complete():
+            messages.error(
+                request,
+                "You must enter all the required data before accessing the profit "
+                "summary.",
+            )
+            return redirect("profit_calculator:index")
+        else:
+            return super().get(request, *args, **kwargs)
 
     def get_object(self, **kwargs):
         return get_current_flightplan(self.request)

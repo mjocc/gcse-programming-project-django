@@ -1,3 +1,10 @@
 {% extends "profit_calculator/base/standard_base.html" %}
 
 {% block title %}{% block header %}Profit information{% endblock %}{% endblock %}
+
+{% block content %}
+    <!-- FIXME -->
+    {% for key, value in object.items %}
+        <span>{{ key }}: {{ value }}</span>
+    {% endfor %}
+{% endblock %}
