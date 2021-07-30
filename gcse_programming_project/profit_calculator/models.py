@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -7,8 +9,8 @@ from django.utils import timezone
 class Airport(models.Model):
     code = models.CharField(max_length=3, primary_key=True)
     name = models.CharField(max_length=50, unique=True)
-    distance_from_lpl = models.FloatField()
-    distance_from_boh = models.FloatField()
+    distance_from_lpl = models.PositiveSmallIntegerField()
+    distance_from_boh = models.PositiveSmallIntegerField()
 
     def __str__(self):
         return self.name
@@ -19,7 +21,7 @@ class Aircraft(models.Model):
     running_cost = models.DecimalField(
         "running cost (£/seat/100km)", max_digits=7, decimal_places=2
     )
-    range = models.FloatField("range (km)")
+    range = models.PositiveSmallIntegerField("range (km)")
     max_standard_class = models.PositiveSmallIntegerField(
         help_text="Max number of seats if all of them are standard class."
     )
@@ -40,20 +42,23 @@ class AirportPlan(models.Model):
         default="",
     )
     foreign_airport = models.ForeignKey(Airport, on_delete=models.PROTECT, null=True)
-    distance = models.FloatField("distance between airports", null=True, blank=True)
+    distance = models.PositiveSmallIntegerField(
+        "distance between airports (km)", null=True, blank=True
+    )
 
     def details_exist(self):
         return self.uk_airport != "" and self.foreign_airport != ""
 
     def save(self, *args, **kwargs):
+        initial_creation = kwargs.pop("initial_creation", False)
         if self.details_exist():
             if self.uk_airport == "LPL":
                 self.distance = self.foreign_airport.distance_from_lpl
             elif self.uk_airport == "BOH":
                 self.distance = self.foreign_airport.distance_from_boh
         super().save(*args, **kwargs)
-        # if not self._state.adding:
-        #     self.flightplan.pricing_plan.update()
+        if not initial_creation:
+            self.flightplan.pricing_plan.update()
 
 
 class AircraftPlan(models.Model):
@@ -86,13 +91,14 @@ class AircraftPlan(models.Model):
         return super().clean()
 
     def save(self, *args, **kwargs):
+        initial_creation = kwargs.pop("initial_creation", False)
         if self.details_exist():
             self.num_standard_class = (
                 self.aircraft.max_standard_class - self.num_first_class * 2
             )
         super().save(*args, **kwargs)
-        # if not self._state.adding:
-        #     self.flightplan.pricing_plan.update()
+        if not initial_creation:
+            self.flightplan.pricing_plan.update()
 
 
 class PricingPlan(models.Model):
@@ -100,20 +106,28 @@ class PricingPlan(models.Model):
         max_digits=7, decimal_places=2, null=True
     )
     first_class_price = models.DecimalField(max_digits=7, decimal_places=2, null=True)
-    cost_per_seat = models.FloatField("Running cost per seat", null=True, blank=True)
-    running_cost = models.FloatField("Total running cost", null=True, blank=True)
-    income = models.FloatField(null=True, blank=True)
-    profit = models.FloatField(null=True, blank=True)
+    cost_per_seat = models.DecimalField(
+        "Running cost per seat", max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    running_cost = models.DecimalField(
+        "Total running cost", max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    income = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    profit = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     def details_exist(self):
         return (
             self.standard_class_price is not None and self.first_class_price is not None
         )
 
+    def profitable(self):
+        return self.profit > 0
+
     def update(self, *args, **kwargs):
         if self.flightplan.complete():
-            self.cost_per_seat = self.flightplan.aircraft_plan.aircraft.running_cost * (
-                self.flightplan.airport_plan.distance / 100
+            self.cost_per_seat = (
+                self.flightplan.aircraft_plan.aircraft.running_cost
+                * Decimal(self.flightplan.airport_plan.distance / 100)
             )
             self.running_cost = self.cost_per_seat * (
                 self.flightplan.aircraft_plan.num_first_class
@@ -128,26 +142,27 @@ class PricingPlan(models.Model):
             super().save(*args, **kwargs)
 
     def save(self, *args, **kwargs):
+        initial_creation = kwargs.pop("initial_creation", False)
         super().save(*args, **kwargs)
-        # if not self._state.adding:
-        #     self.update()
+        if not initial_creation:
+            self.update()
 
 
 def default_airportplan():
     ap = AirportPlan()
-    ap.save()
+    ap.save(initial_creation=True)
     return ap.pk
 
 
 def default_aircraftplan():
     ap = AircraftPlan()
-    ap.save()
+    ap.save(initial_creation=True)
     return ap.pk
 
 
 def default_pricingplan():
     pp = PricingPlan()
-    pp.save()
+    pp.save(initial_creation=True)
     return pp.pk
 
 
