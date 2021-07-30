@@ -1,0 +1,39 @@
+{% extends "profit_calculator/base/standard_base.html" %}
+
+{% block title %}Export data{% endblock %}
+{% block header %}Export flightplan information{% endblock %}
+
+{% block content %}
+    <div class="container px-0 pt-3 pb-2 d-flex flex-column">
+        <button class="btn btn-dark my-2 mb-0"  data-bs-toggle="collapse" data-bs-target="#export-form-container">Export data</button>
+        <div class="collapse border border-top-0 rounded-bottom bg-light" id="export-form-container">
+            <form class="px-5 py-3" method="post">
+                {% csrf_token %}
+                <div class="form-group my-2">
+                    <span class="pb-1">File type:</span>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="filetype" id="json-file" value="json">
+                        <label class="form-check-label" for="json-file">
+                            JSON
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="filetype" id="xml-file" value="xml">
+                        <label class="form-check-label" for="xml-file">
+                            XML
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="filetype" id="yaml-file" value="yaml">
+                        <label class="form-check-label" for="yaml-file">
+                            YAML
+                        </label>
+                    </div>
+                </div>
+                <input type="hidden" name="import/export" value="export" />
+                <input class="btn btn-dark mt-1 mb-2 btn-block" type="submit" value="Export"/>
+            </form>
+        </div>
+        <a class="btn btn-dark mt-3" href="{% url 'profit_calculator:index' %}">Back to Main Menu</a>
+    </div>
+{% endblock %}

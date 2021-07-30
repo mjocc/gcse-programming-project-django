@@ -12,6 +12,6 @@
         <hr class="m-2">
         <a href="{% url 'profit_calculator:profit_information' %}" class="btn btn-dark m-2 {% if not complete %}disabled{% endif %}">Profit information</a>
         <hr class="m-2">
-        <a href="#" class="btn btn-dark m-2">Import/export data</a>
+        <a href="{% url 'profit_calculator:export' %}" class="btn btn-dark m-2">Export flight plan information</a>
     </div>
 {% endblock %}

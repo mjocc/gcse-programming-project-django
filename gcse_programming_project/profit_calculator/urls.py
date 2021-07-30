@@ -33,4 +33,5 @@ urlpatterns = [
     path("aircraft/", views.AircraftView.as_view(), name="aircraft_details"),
     path("pricing/", views.PricingView.as_view(), name="pricing_details"),
     path("profit/", views.ProfitView.as_view(), name="profit_information"),
+    path("export/", views.ExportView.as_view(), name="export"),
 ]

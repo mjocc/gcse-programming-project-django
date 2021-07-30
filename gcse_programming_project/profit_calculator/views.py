@@ -1,9 +1,12 @@
+import io
+
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
 from django.contrib.messages.views import SuccessMessageMixin
-from django.http import Http404, JsonResponse
+from django.core import serializers
+from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.views import View
@@ -295,3 +298,30 @@ class ProfitView(DetailView):
 
     def get_object(self, **kwargs):
         return get_current_flightplan(self.request)
+
+
+class ExportView(ListView):
+    template_name = "profit_calculator/misc/export.html"
+    model = FlightPlan
+
+    def post(self, request):
+        self.object_list = self.get_queryset()
+        filetype = request.POST["filetype"]
+        if filetype in ["json", "xml", "yaml"]:
+            data = serializers.serialize(filetype, self.object_list)
+            file = io.BytesIO(data.encode())
+            if filetype == "json":
+                content_type = "application/json"
+            elif filetype == "xml":
+                content_type = "application/xml"
+            elif filetype == "yaml":
+                content_type = "application/yaml"
+            return FileResponse(
+                file,
+                as_attachment=True,
+                filename=f"flightplan.{filetype}",
+                content_type=content_type,
+            )
+        else:
+            messages.error("Invalid filetype.")
+            return redirect("profit_calculator/misc/export.html")
