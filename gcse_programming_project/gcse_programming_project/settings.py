@@ -96,7 +96,11 @@ DATABASES = {
 LOGIN_URL = "profit_calculator:login"
 LOGIN_REDIRECT_URL = "profit_calculator:index"
 LOGOUT_REDIRECT_URL = "profit_calculator:login"
-OPEN_URLS = ["profit_calculator:signup", "profit_calculator:logout"]
+OPEN_URLS = [
+    "profit_calculator:signup",
+    "profit_calculator:logout",
+    "profit_calculator:change_password",
+]
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators

@@ -1,9 +1,8 @@
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
 from django.contrib.messages.views import SuccessMessageMixin
-from django.forms import model_to_dict
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
@@ -65,6 +64,12 @@ class UserSignupView(SuccessMessageMixin, CreateView):
     template_name = "profit_calculator/auth/signup.html"
     success_url = reverse_lazy("profit_calculator:login")
     success_message = "Account created successfully."
+
+
+class UserPasswordChangeView(SuccessMessageMixin, PasswordChangeView):
+    template_name = "profit_calculator/auth/change_password.html"
+    success_url = reverse_lazy("profit_calculator:index")
+    success_message = "Password changed successfully."
 
 
 class FlightPlanView(ListView):
