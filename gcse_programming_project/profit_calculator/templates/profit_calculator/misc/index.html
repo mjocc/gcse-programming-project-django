@@ -4,6 +4,8 @@
 
 {% block content %}
     <div class="px-2 py-3 d-flex flex-column">
+        <a href="{% url 'profit_calculator:flightplans' %}" class="btn btn-dark m-2">Manage flight plans</a>
+        <hr class="m-2">
         <a href="{% url 'profit_calculator:airport_details' %}" class="btn btn-dark m-2">Enter airport details</a>
         <a href="{% url 'profit_calculator:aircraft_details' %}" class="btn btn-dark m-2">Enter aircraft details</a>
         <a href="{% url 'profit_calculator:pricing_details' %}" class="btn btn-dark m-2">Enter pricing details</a>
@@ -11,8 +13,5 @@
         <a href="{% url 'profit_calculator:profit_information' %}" class="btn btn-dark m-2 {% if not complete %}disabled{% endif %}">Profit information</a>
         <hr class="m-2">
         <a href="#" class="btn btn-dark m-2">Import/export data</a>
-        <a href="{% url 'profit_calculator:clear_data' %}" class="btn btn-dark m-2">Clear data</a>
-        <hr class="m-2">
-        <a href="{% url 'profit_calculator:flightplans' %}" class="btn btn-dark m-2">Change selected flight plan</a>
-    <div>
+    </div>
 {% endblock %}

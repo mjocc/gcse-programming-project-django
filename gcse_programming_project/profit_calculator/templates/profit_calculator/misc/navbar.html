@@ -13,6 +13,9 @@
         <li class="nav-item">
             <a class="nav-link {% if request.path == index %}active{% endif %}" href="{{ index }}">Home</a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.path == flightplans %}active{% endif %}" href="{{ flightplans }}">Manage flight plans</a>
+        </li>
         <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle {% if request.path == airport_details or request.path == aircraft_details or request.path == pricing_details %}active{% endif %}"
                href="#" id="navbar-forms-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -33,12 +36,6 @@
         </li>
         <li class="nav-item">
             <a class="nav-link" href="#">Import/export data</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link {% if request.path == clear_data %}active{% endif %}" href="{{ clear_data }}">Clear data</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link {% if request.path == flightplans %}active{% endif %}" href="{{ flightplans }}">Flight plans</a>
         </li>
     </ul>
 {% endblock %}

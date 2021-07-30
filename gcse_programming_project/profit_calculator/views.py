@@ -290,7 +290,3 @@ class ProfitView(DetailView):
 
     def get_object(self, **kwargs):
         return get_current_flightplan(self.request)
-
-
-class ClearView(TemplateView):
-    template_name = "profit_calculator/misc/clear.html"
