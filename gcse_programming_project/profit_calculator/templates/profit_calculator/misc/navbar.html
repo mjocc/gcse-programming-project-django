@@ -9,7 +9,7 @@
     {% url "profit_calculator:profit_information" as profit_information %}
     {% url "profit_calculator:clear_data" as clear_data %}
     {% url "profit_calculator:flightplans" as flightplans %}
-    <ul class="navbar-nav me-auto mb-2 mb-md-0">
+    <ul class="navbar-nav me-auto mb-2 mb-{{ breakpoint }}-0">
         <li class="nav-item">
             <a class="nav-link {% if request.path == index %}active{% endif %}" href="{{ index }}">Home</a>
         </li>

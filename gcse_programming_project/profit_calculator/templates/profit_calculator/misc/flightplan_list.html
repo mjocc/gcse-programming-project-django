@@ -17,7 +17,7 @@
         <tbody>
         {% if object_list %}
                 {% for flightplan in page_obj %}
-                <tr data-id="{{ flightplan.pk }}">
+                <tr data-id="{{ flightplan.pk }}" tabindex="0">
                     <td>{{ flightplan.save_name }}</td>
                     <td>{{ flightplan.created }}</td>
                     {% if flightplan.complete %}
@@ -207,19 +207,32 @@
                 setFlightPlanCookie();
             });
 
+            function handleTableRowClick(elem, event) {
+                elem.parentNode.childNodes.forEach((sibElem) => {
+                    if (sibElem.tagName == 'TR'){
+                        sibElem.classList.remove('table-active');
+                    }
+                });
+                elem.classList.add('table-active');
+                selected = parseInt(elem.dataset.id);
+                editNameField.value = elem.firstChild.nextSibling.textContent;
+                selectedFpFields.forEach((field) => field.value = selected);
+                rowButtons.forEach((button) => button.disabled = false);
+            }
+
             tableRows.forEach((elem) => {
                 if (!(elem.dataset.noItems == 'true')){
-                    elem.addEventListener('click', (e) => {
-                        elem.parentNode.childNodes.forEach((sibElem) => {
-                            if (sibElem.tagName == 'TR'){
-                                sibElem.classList.remove('table-active');
-                            }
-                        });
-                        elem.classList.add('table-active');
-                        selected = parseInt(elem.dataset.id);
-                        editNameField.value = elem.firstChild.nextSibling.textContent;
-                        selectedFpFields.forEach((field) => field.value = selected);
-                        rowButtons.forEach((button) => button.disabled = false);
+                    elem.addEventListener('click', (event) => {
+                        handleTableRowClick(elem, event);
+                    });
+                    elem.addEventListener('dblclick', (event) => {
+                        handleTableRowClick(elem, event);
+                        setFlightPlanCookie();
+                    });
+                    elem.addEventListener('keyup', (event) => {
+                        if (event.keyCode === 13) {
+                            handleTableRowClick(elem, event);
+                        }
                     });
                 }
             });

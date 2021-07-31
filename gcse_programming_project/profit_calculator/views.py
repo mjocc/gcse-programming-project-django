@@ -1,14 +1,18 @@
 import io
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core import serializers
+from django.core.exceptions import PermissionDenied
+from django.forms import model_to_dict
 from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
+from django.utils.safestring import mark_safe
 from django.views import View
 from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.detail import SingleObjectMixin
@@ -33,11 +37,17 @@ def context_processor(request):
             complete = False
     else:
         complete = False
-    return {"complete": complete}
+    return {"complete": complete, "breakpoint": settings.NAVBAR_BREAKPOINT}
 
 
 def get_current_flightplan(request):
     return FlightPlan.objects.get(pk=request.session["current_fp"])
+
+
+def get_user_flightplans(request):
+    return FlightPlan.objects.filter(user=request.user).order_by(
+        "-created", "save_name"
+    )
 
 
 class IndexView(TemplateView):
@@ -80,9 +90,7 @@ class FlightPlanView(ListView):
     paginate_by = 5
 
     def get_queryset(self):
-        return FlightPlan.objects.filter(user=self.request.user).order_by(
-            "-created", "save_name"
-        )
+        return get_user_flightplans(self.request)
 
     def post(self, request):
         """Set session cookie with current flightplan."""
@@ -100,14 +108,21 @@ class CreateFlightPlan(View):
             return self.form_valid()
 
     def form_valid(self):
-        fp = FlightPlan(
-            save_name=self.request.POST["save-name"], user=self.request.user
-        )
-        fp.save()
-        messages.success(
-            self.request, f'Flight plan "{fp.save_name}" created successfully.'
-        )
-        return redirect(self.success_url)
+        if FlightPlan.objects.filter(user=self.request.user).count() >= 25:
+            messages.error(
+                "You already have 25 flightplans. This is the maximum "
+                "allowed. Please delete at least one and then try again."
+            )
+            return redirect("profit_calculator:flightplans")
+        else:
+            fp = FlightPlan(
+                save_name=self.request.POST["save-name"], user=self.request.user
+            )
+            fp.save()
+            messages.success(
+                self.request, f'Flight plan "{fp.save_name}" created successfully.'
+            )
+            return redirect(self.success_url)
 
     def form_invalid(self):
         messages.error(
@@ -146,10 +161,13 @@ class UpdateFlightPlan(SingleObjectMixin, View):
         return redirect("profit_calculator:flightplans")
 
     def get_object(self, **kwargs):
-        try:
-            return get_object_or_404(FlightPlan, pk=self.request.POST["selected-fp"])
-        except KeyError:
-            raise Http404("Selected flightplan does not exist.")
+        fp = get_object_or_404(FlightPlan, pk=self.request.POST["selected-fp"])
+        if fp.user == self.request.user:
+            return fp
+        else:
+            raise PermissionDenied(
+                "You do not have permission to edit this flight plan."
+            )
 
 
 class DeleteFlightPlan(SingleObjectMixin, View):
@@ -174,7 +192,7 @@ class AirportView(SuccessMessageMixin, UpdateView):
     model = AirportPlan
     fields = ["uk_airport", "foreign_airport"]
     template_name = "profit_calculator/forms/airportplan_form.html"
-    success_url = reverse_lazy("profit_calculator:airport_details")
+    success_url = reverse_lazy("profit_calculator:index")
     success_message = "Airport information submitted successfully."
     error_message = "The submitted airport information was invalid. Please try again."
 
@@ -196,7 +214,7 @@ class AircraftView(SuccessMessageMixin, UpdateView):
     model = AircraftPlan
     fields = ["aircraft", "num_first_class"]
     template_name = "profit_calculator/forms/aircraftplan_form.html"
-    success_url = reverse_lazy("profit_calculator:aircraft_details")
+    success_url = reverse_lazy("profit_calculator:index")
     success_message = "Aircraft information submitted successfully."
     error_message = "The submitted aircraft information was invalid. Please try again."
 
@@ -222,7 +240,7 @@ class PricingView(SuccessMessageMixin, UpdateView):
     model = PricingPlan
     fields = ["standard_class_price", "first_class_price"]
     template_name = "profit_calculator/forms/pricingplan_form.html"
-    success_url = reverse_lazy("profit_calculator:pricing_details")
+    success_url = reverse_lazy("profit_calculator:index")
     success_message = "Pricing information submitted successfully."
     error_message = "The submitted pricing information was invalid. Please try again."
 
@@ -237,31 +255,37 @@ class PricingView(SuccessMessageMixin, UpdateView):
         if not fp.airport_plan.details_exist():
             messages.error(
                 self.request,
-                f"No airport data has been submitted. This is needed to calculate the "
-                f"profit. Press <a href='"
-                f"{reverse('profit_calculator:airport_details')}'>here</a> to "
-                f"enter it.",
+                mark_safe(
+                    f"No airport data has been submitted. This is needed to "
+                    f"calculate the profit. Press <a href='"
+                    f"{reverse('profit_calculator:airport_details')}'>here</a> to "
+                    f"enter it."
+                ),
                 "top",
             )
             disable = True
         if not fp.aircraft_plan.details_exist():
             messages.error(
                 self.request,
-                f"No aircraft data has been submitted. This is needed to calculate the "
-                f"profit. Press <a href='"
-                f"{reverse('profit_calculator:aircraft_details')}'>here</a> to "
-                f"enter it.",
+                mark_safe(
+                    f"No aircraft data has been submitted. This is needed to "
+                    f"calculate the profit. Press <a href='"
+                    f"{reverse('profit_calculator:aircraft_details')}'>here</a> to "
+                    f"enter it."
+                ),
                 "top",
             )
             disable = True
         if not fp.aircraft_plan.in_range() and not disable:
             messages.error(
                 self.request,
-                f"This route is longer than the range of the aircraft selected. Please "
-                f"change the aircraft <a href='"
-                f"{reverse('profit_calculator:aircraft_details')}'>here</a> or "
-                f"change the route <a href='"
-                f"{reverse('profit_calculator:airport_details')}'>here</a>.",
+                mark_safe(
+                    f"This route is longer than the range of the aircraft selected. "
+                    f"Please change the aircraft <a href='"
+                    f"{reverse('profit_calculator:aircraft_details')}'>here</a> or "
+                    f"change the route <a href='"
+                    f"{reverse('profit_calculator:airport_details')}'>here</a>."
+                ),
                 "top",
             )
             disable = True
@@ -302,7 +326,9 @@ class ProfitView(DetailView):
 
 class ExportView(ListView):
     template_name = "profit_calculator/misc/export.html"
-    model = FlightPlan
+
+    def get_queryset(self):
+        return get_user_flightplans(self.request)
 
     def post(self, request):
         self.object_list = self.get_queryset()

@@ -6,7 +6,7 @@
         <main class="container p-3">
             {% for message in messages %}
                 {% if "top" in message.extra_tags %}
-                    <div class="alert {{ message.level_tag }}" role="alert">{{ message|safe }}</div>
+                    <div class="alert {{ message.level_tag }}" role="alert">{{ message }}</div>
                 {% endif %}
             {% endfor %}
 
@@ -14,7 +14,7 @@
 
             {% for message in messages %}
                 {% if message.extra_tags != "top" %}
-                    <div class="mt-2 alert {{ message.level_tag }}" role="alert">{{ message|safe }}</div>
+                    <div class="mt-2 alert {{ message.level_tag }}" role="alert">{{ message }}</div>
                 {% endif %}
             {% endfor %}
 

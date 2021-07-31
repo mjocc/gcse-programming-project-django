@@ -26,7 +26,6 @@ SECRET_KEY = "django-insecure-j2ct%mz4y!1hg@n1j-2f5!yz=#6=l!f$@jujkn&r%n26809er%
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
 ALLOWED_HOSTS = []
 
 
@@ -162,3 +161,7 @@ MESSAGE_TAGS = {
 # https://django-crispy-forms.readthedocs.io/en/latest/
 
 CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+# Custom template settings
+
+NAVBAR_BREAKPOINT = "xl"
