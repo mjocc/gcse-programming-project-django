@@ -10,8 +10,9 @@ Django = "^3.2.5"
 django-crispy-forms = "^1.12.0"
 crispy-bootstrap5 = "^0.4"
 whitenoise = {extras = ["brotli"], version = "^5.3.0"}
-waitress = "^2.0.0"
 PyYAML = "^5.4.1"
+waitress = {version = "^2.0.0", platform = "win32"}
+gunicorn = {version = "^20.1.0", platform = "linux"}
 
 [tool.poetry.dev-dependencies]
 
