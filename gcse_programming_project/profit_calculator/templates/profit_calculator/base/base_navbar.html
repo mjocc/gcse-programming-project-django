@@ -11,7 +11,7 @@
         </button>
         <div class="collapse navbar-collapse" id="navbar-collapsed-section">
             {% block nav %}{% endblock %}
-            <ul class="navbar-nav ms-auto mb-2 mb-{{ breakpoint }}-0">
+            <ul class="navbar-nav mx-2 ms-{{ breakpoint }}-auto me-{{ breakpoint }}-0">
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbar-account-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         {% if user.is_authenticated %}{{ user.username }}{% else %}Account{% endif %}
