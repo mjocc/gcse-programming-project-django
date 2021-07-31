@@ -42,7 +42,7 @@ class AirportPlan(models.Model):
         ],
         default="",
     )
-    foreign_airport = models.ForeignKey(Airport, on_delete=models.PROTECT, null=True)
+    foreign_airport = models.ForeignKey(Airport, on_delete=models.SET_NULL, null=True)
     distance = models.PositiveSmallIntegerField(
         "distance between airports (km)", null=True, blank=True
     )
@@ -63,7 +63,7 @@ class AirportPlan(models.Model):
 
 
 class AircraftPlan(models.Model):
-    aircraft = models.ForeignKey(Aircraft, on_delete=models.PROTECT, null=True)
+    aircraft = models.ForeignKey(Aircraft, on_delete=models.SET_NULL, null=True)
     num_first_class = models.PositiveSmallIntegerField(
         "Number of first class seats", null=True
     )
