@@ -4,7 +4,6 @@ from django.contrib import admin
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.utils import timezone
 
 
 class Airport(models.Model):
@@ -18,7 +17,7 @@ class Airport(models.Model):
 
 
 class Aircraft(models.Model):
-    type = models.CharField(max_length=30, unique=True)
+    type = models.CharField(max_length=30, primary_key=True)
     running_cost = models.DecimalField(
         "running cost (£/seat/100km)", max_digits=7, decimal_places=2
     )
@@ -191,7 +190,7 @@ class FlightPlan(models.Model):
     )
     save_name = models.CharField(max_length=100)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    created = models.DateTimeField("date created", default=timezone.now)
+    created = models.DateTimeField("date created", auto_now_add=True)
 
     def __str__(self):
         return self.save_name
