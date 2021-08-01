@@ -65,6 +65,6 @@ class Command(BaseCommand):
                 objects.append(get_object(row))
             model.objects.all().delete()
             model.objects.bulk_create(objects)
-            self.stdout.write("Data imported successfully")
+            self.stdout.write(self.style.SUCCESS("Data imported successfully"))
         else:
-            self.stdout.write("Import cancelled")
+            self.stdout.write(self.style.ERROR("Import cancelled"))
