@@ -1,4 +1,8 @@
 language = "python3"
 # Pressing the run button will not work
 # To run, cd into the gcse_programming_project directory and run the below command there
+# Run poetry install first if not already done by run button
 run = "gunicorn --bind='0.0.0.0:80' gcse_programming_project.wsgi:application"
+
+# To run development server
+# run = "python manage.py runserver 0.0.0.0:80"
