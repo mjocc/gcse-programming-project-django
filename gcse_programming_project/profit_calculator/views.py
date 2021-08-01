@@ -8,7 +8,6 @@ from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core import serializers
 from django.core.exceptions import PermissionDenied
-from django.forms import model_to_dict
 from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
@@ -18,14 +17,8 @@ from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.edit import CreateView, UpdateView
 
-from .models import (
-    Aircraft,
-    AircraftPlan,
-    Airport,
-    AirportPlan,
-    FlightPlan,
-    PricingPlan,
-)
+from .models import (Aircraft, AircraftPlan, Airport, AirportPlan, FlightPlan,
+                     PricingPlan)
 
 
 def context_processor(request):

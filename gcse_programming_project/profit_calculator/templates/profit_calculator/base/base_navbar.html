@@ -17,13 +17,11 @@
                         {% if user.is_authenticated %}{{ user.username }}{% else %}Account{% endif %}
                     </a>
                     <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="navbar-account-dropdown">
-                        {% if user.is_authenticated %}
-                            <li><a class="dropdown-item" href="{% url 'profit_calculator:change_password' %}">Change password</a></li>
-                            <li><a class="dropdown-item" href="{% url 'profit_calculator:logout' %}">Log out</a></li>
-                        {% else %}
-                            <li><a class="dropdown-item" href="{% url 'profit_calculator:login' %}">Log in</a></li>
-                            <li><a class="dropdown-item" href="{% url 'profit_calculator:signup' %}">Sign up</a></li>
+                        {% if user.is_staff %}
+                            <li><a class="dropdown-item" href="{% url 'admin:app_list' app_label='profit_calculator' %}">Admin</a></li>
                         {% endif %}
+                        <li><a class="dropdown-item" href="{% url 'profit_calculator:change_password' %}">Change password</a></li>
+                        <li><a class="dropdown-item" href="{% url 'profit_calculator:logout' %}">Log out</a></li>
                     </ul>
                 </li>
             </ul>
