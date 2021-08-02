@@ -18,7 +18,7 @@ python -m poetry shell
 After that, navigate into the `gcse_programming_project` sub-directory before creating the database and collecting/processing static files:
 ```bash
 python manage.py migrate
-python manage.py collect static
+python manage.py collectstatic
 ```
 
 All later commands in this README assume you have activated the virtualenv and in the top-level `gcse_programming_project` directory.
