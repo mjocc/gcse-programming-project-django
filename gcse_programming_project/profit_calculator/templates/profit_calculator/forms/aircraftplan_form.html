@@ -6,7 +6,7 @@
 {% block form %}
     <div class="form-group my-3">
         <label class="mb-1" for="aircraft-type">Aircraft Type</label>
-        <select class="form-select" id="aircraft-type" name="aircraft" required>
+        <select class="form-select" id="aircraft-type" name="aircraft" required autofocus>
             <option disabled selected hidden>Select an option</option>
             {% for aircraft in aircrafts %}
                 <option value="{{ aircraft.pk }}">{{ aircraft }}</option>
