@@ -21,7 +21,7 @@ python manage.py migrate
 python manage.py collect static
 ```
 
-All later commands in this README assume you are in the virtualenv and in the top-level `gcse_programming_project` directory.
+All later commands in this README assume you have activated the virtualenv and in the top-level `gcse_programming_project` directory.
 
 ## Development
 
