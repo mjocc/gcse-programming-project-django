@@ -24,7 +24,7 @@ python manage.py migrate
 python manage.py collectstatic
 ```
 
-All later commands in this README assume you have activated the virtualenv and in the top-level `gcse_programming_project` directory.
+All later commands in this README assume you have activated the virtualenv and are in the top-level `gcse_programming_project` directory.
 
 ## Development
 
@@ -40,7 +40,7 @@ python manage.py makemigrations
 python manage.py migrate
 ```
 
-To work with the site (specifically the database models) in an interactive shell:
+To work with the application (specifically the database models) in an interactive shell:
 ```bash
 python manage.py shell
 ```
